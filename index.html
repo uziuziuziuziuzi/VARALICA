@@ -12,6 +12,8 @@ h1,h2{font-weight:600;margin:18px 0 6px}
 button{background:#fff;color:#000;border:0;border-radius:10px;padding:14px;font-size:18px;width:100%;margin:6px 0}
 button.o{background:#000;color:#fff;border:1px solid #fff}
 button.s{width:44px;padding:8px;margin:0;flex:none}
+.pc{display:flex;align-items:center;justify-content:center;border:1px solid #666;border-radius:8px;padding:0 12px 0 6px}
+.pc input[type=number]{border:0;width:46px;margin:0;padding:10px 2px;text-align:right;background:transparent;outline:0}
 input[type=text],input[type=number]{background:#000;color:#fff;border:1px solid #666;border-radius:8px;padding:10px;font-size:16px;width:100%;box-sizing:border-box;margin:3px 0}
 .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0}
 .row button{flex:1}.row button.s{flex:none}
@@ -58,7 +60,10 @@ const S={n:5,names:[],mode:'w',t:'fix',fix:1,min:1,max:2,w:{},cats:Object.keys(D
 let R=null,scr='setup',tm=null;
 const mx=()=>Math.max(1,Math.ceil(S.n/2)-1);
 const nm=i=>(S.names[i]||'').trim()||'Igrač '+(i+1);
-const wt=c=>S.w[c]===undefined?1:S.w[c];
+const rg=()=>{const a=[];for(let c=S.min;c<=S.max;c++)a.push(c);return a};
+function pcts(){const cs=rg(),p={};if(cs.every(c=>S.w[c]!==undefined)&&cs.reduce((a,c)=>a+S.w[c],0)==100){cs.forEach(c=>p[c]=S.w[c]);return p}const b=Math.floor(100/cs.length),e=100%cs.length;cs.forEach((c,i)=>p[c]=b+(i<e?1:0));return p}
+const wt=c=>pcts()[c];
+function setp(c,v){const cs=rg(),cur=pcts(),o=cs.filter(x=>x!=c);v=cs.length==1?100:Math.min(100,Math.max(0,Math.round(+v||0)));const r=100-v,os=o.reduce((a,x)=>a+cur[x],0),n={};n[c]=v;let left=r;o.forEach((x,i)=>{n[x]=i==o.length-1?left:Math.min(left,Math.round(os?r*cur[x]/os:r/o.length));left-=n[x]});S.w=n;go('setup')}
 function fixc(){const m=mx();S.fix=Math.min(Math.max(1,S.fix),m);S.min=Math.min(Math.max(1,S.min),m);S.max=Math.min(Math.max(S.min,S.max),m)}
 function chg(k,d){S[k]+=d;S.n=Math.min(10,Math.max(3,S.n));S.timer=Math.max(0,Math.min(600,S.timer));go('setup')}
 function tc(c){const i=S.cats.indexOf(c);i<0?S.cats.push(c):S.cats.splice(i,1)}
@@ -74,9 +79,9 @@ h+=sp('Broj igrača','n',S.n)+'<details'+(S.dt?' open':'')+' ontoggle="S.dt=this
 for(let i=0;i<S.n;i++)h+=`<input type=text placeholder="Igrač ${i+1}" value="${(S.names[i]||'').replace(/"/g,'&quot;')}" onchange="S.names[${i}]=this.value">`;
 h+='</details><h2>Broj impostera</h2><div class=row>'+bt('Fiksno',S.t=='fix',"S.t='fix';go('setup')")+bt('Raspon',S.t=='rng',"S.t='rng';go('setup')")+'</div>';
 if(S.t=='fix')h+=sp('Imposteri','fix',S.fix);
-else{h+=sp('Minimum','min',S.min)+sp('Maksimum','max',S.max)+'<p class=mu>Šansa za svaki broj (težina; podrazumevano jednake):</p>';
-let s=0;for(let c=S.min;c<=S.max;c++)s+=wt(c);
-for(let c=S.min;c<=S.max;c++)h+=`<div class=row><span>${c} imp.</span><span><input type=number min=0 step=1 value=${wt(c)} style="width:70px" onchange="S.w[${c}]=Math.max(0,+this.value||0);go('setup')"> <span class=mu>${s?Math.round(100*wt(c)/s):Math.round(100/(S.max-S.min+1))}%</span></span></div>`}
+else{h+=sp('Minimum','min',S.min)+sp('Maksimum','max',S.max)+'<p class=mu>Šansa za svaki broj (zbir je 100%):</p>';
+const P=pcts();
+for(let c=S.min;c<=S.max;c++)h+=`<div class=row><span>${c} ${c==1?'IMPOSTER':'IMPOSTERA'}</span><span style="display:flex;align-items:center;gap:6px"><button class=s onclick="setp(${c},${P[c]-5})">−</button><span class=pc><input type=number inputmode=numeric min=0 max=100 step=1 value=${P[c]} onchange="setp(${c},this.value)">%</span><button class=s onclick="setp(${c},${P[c]+5})">+</button></span></div>`}
 h+='<h2>Kategorije</h2><div class=chips>'+Object.keys(D).map(c=>`<label><input type=checkbox ${S.cats.includes(c)?'checked':''} onchange="tc('${c}')">${c}</label>`).join('')+'</div><h2>Podešavanja</h2>';
 h+=S.mode=='w'?ck('Imposter vidi kategoriju','cw'):ck('Imposter zna da je imposter','qk')+ck('Prikaži kategoriju svima','qc');
 h+=sp('Tajmer diskusije','timer',S.timer?Math.floor(S.timer/60)+':'+String(S.timer%60).padStart(2,'0'):'isklj.',15);
