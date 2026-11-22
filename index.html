@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="sr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Varalica</title>
+<style>
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:#000;color:#fff;font:18px system-ui,sans-serif}
+#app{max-width:480px;margin:auto;padding:16px}
+h1,h2{font-weight:600;margin:18px 0 6px}
+button{background:#fff;color:#000;border:0;border-radius:10px;padding:14px;font-size:18px;width:100%;margin:6px 0}
+button.o{background:#000;color:#fff;border:1px solid #fff}
+button.s{width:44px;padding:8px;margin:0;flex:none}
+input[type=text],input[type=number]{background:#000;color:#fff;border:1px solid #666;border-radius:8px;padding:10px;font-size:16px;width:100%;box-sizing:border-box;margin:3px 0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0}
+.row button{flex:1}.row button.s{flex:none}
+.big{font-size:38px;text-align:center;margin:44px 0;word-break:break-word}
+.mu{color:#888}.c{text-align:center}
+label{display:flex;align-items:center;gap:10px;margin:10px 0}
+input[type=checkbox]{width:22px;height:22px}
+.chips{display:flex;flex-wrap:wrap;gap:4px 18px}
+#hm{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;width:44px;height:44px;padding:0;margin:0;display:none;z-index:5;background:#000;color:#fff;border:1px solid #fff;border-radius:10px}
+#hm svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vertical-align:middle}
+</style></head><body><button id="hm" aria-label="Glavni meni" onclick="go('setup')"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h5v-6h3v6h5V10"/></svg></button>
+<div id="app"></div>
+<script>
+const D={
+"Hrana":{w:"pica,sarma,burek,ćevapi,palačinke,sladoled,pasulj,pljeskavica,kajmak,ajvar,sushi,hamburger,tiramisu,čokolada,jagoda,lubenica,kačamak,gibanica,pomfrit,paprikaš".split(","),
+q:[["Koje jelo bi jeo svaki dan do kraja života?","Koje jelo ne bi jeo ni da si gladan?"],["Šta ti je omiljeni doručak?","Šta ti je omiljena večera?"],["Koji je najbolji brzi zalogaj?","Koji je najbolji desert?"],["Šta uvek ima u tvom frižideru?","Šta nikad nema u tvom frižideru?"]]},
+"Životinje":{w:"lav,slon,pingvin,delfin,vuk,medved,žirafa,kengur,papagaj,zmija,jež,zec,orao,ajkula,konj,pauk,krokodil,mačka,pas,lisica".split(","),
+q:[["Koja životinja bi ti bila kućni ljubimac?","Koja životinja te plaši?"],["Koju životinju najviše voliš?","Koju životinju najmanje voliš?"],["Koja je najbrža životinja koje se setiš?","Koja je najveća životinja koje se setiš?"],["Koja životinja bi ti bila u prethodnom životu?","Koja životinja bi ti bila u sledećem životu?"]]},
+"Mesta":{w:"Beograd,Pariz,Njujork,plaža,bolnica,aerodrom,pijaca,bioskop,škola,zoološki vrt,Kalemegdan,Zlatibor,Venecija,pustinja,stadion,biblioteka,kafana,planina,most,tržni centar".split(","),
+q:[["Gde bi otišao na odmor?","Gde nikad ne bi otišao?"],["Koje mesto u gradu najčešće posećuješ?","Koje mesto u gradu izbegavaš?"],["U kom gradu bi živeo?","U kom gradu si poslednji put bio?"],["Gde ti je omiljeno mesto za izlazak?","Gde ti je omiljeno mesto za mir?"]]},
+"Sport":{w:"fudbal,košarka,tenis,plivanje,boks,odbojka,šah,skijanje,rukomet,golf,biciklizam,vaterpolo,džudo,trčanje,teretana,ragbi,stoni tenis,streljaštvo,jahanje,atletika".split(","),
+q:[["Koji sport najradije gledaš?","Koji sport najradije igraš?"],["Koji sport je najteži?","Koji sport je najdosadniji?"],["Ko je najbolji sportista svih vremena?","Ko ti je omiljeni sportista?"],["Koji sport bi trenirao da možeš?","Koji sport si trenirao kao dete?"]]},
+"Zanimanja":{w:"doktor,pilot,kuvar,vatrogasac,policajac,učitelj,advokat,frizer,vozač,arhitekta,programer,konobar,fotograf,pekar,mehaničar,pesnik,sudija,kapetan,glumac,farmaceut".split(","),
+q:[["Koje zanimanje bi izabrao da možeš?","Koje zanimanje ti uopšte ne bi odgovaralo?"],["Koje zanimanje je najstresnije?","Koje zanimanje je najbolje plaćeno?"],["Šta si želeo da budeš kao dete?","Šta želiš da budeš za deset godina?"],["Koje zanimanje najviše poštuješ?","Koje zanimanje ti je najzanimljivije?"]]},
+"Predmeti":{w:"ključ,kišobran,telefon,ogledalo,sat,naočare,lonac,jastuk,fen,punjač,sveća,torba,čekić,slušalice,frižider,daljinski,fotelja,lopta,novčanik,ranac".split(","),
+q:[["Koji predmet ti je uvek u džepu?","Koji predmet ti je uvek u sobi?"],["Bez kog predmeta ne izlaziš iz kuće?","Koji predmet si poslednji kupio?"],["Koji predmet bi poneo na pusto ostrvo?","Koji predmet bi najradije bacio?"],["Koji predmet te najviše nervira?","Koji predmet ti je najkorisniji?"]]}
+};
+const X=(c,w,q)=>{D[c].w.push(...w.split(","));D[c].q.push(...q)};
+const N=(c,w,q)=>{D[c]={w:w.split(","),q}};
+X("Hrana","čorba,krompir,pita,lazanje,pršuta,baklava,sir,ražnjići,vafli,špagete,kiflica,suvo meso,punjene paprike,tortilja,kokice",[["Koju hranu ne možeš da odbiješ?","Koju hranu si prvu naučio da spremaš?"],["Koje piće najradije piješ?","Koje piće najmanje voliš?"],["Šta voliš da jedeš kad si tužan?","Šta voliš da jedeš kad slaviš?"]]);
+X("Životinje","noj,leopard,vidra,pčela,veverica,tigar,nosorog,gorila,foka,kornjača,gavran,sova,lama,pacov,morž",[["Koja životinja je najsimpatičnija?","Koja životinja je najopasnija?"],["Koju životinju bi voleo da vidiš uživo?","Koju životinju si video uživo?"],["Koja životinja najviše liči na tebe?","Koja životinja najviše liči na tvog druga?"]]);
+X("Mesta","Rim,London,Tokio,Ada Ciganlija,Dubrovnik,Egipat,pošta,pekara,park,crkva,muzej,hotel,kamp,pećina,ostrvo",[["Gde bi voleo da živiš u inostranstvu?","Gde bi voleo da živiš u Srbiji?"],["Koje mesto te opušta?","Koje mesto te nervira?"],["Koje mesto bi preporučio turistima?","Koje mesto bi preporučio sebi za vikend?"]]);
+X("Sport","kriket,badminton,hokej,veslanje,skakanje,bacanje koplja,krosfit,joga,parkur,surfovanje,pecanje,kuglanje,pikado,biljar,maraton",[["Koji sportski događaj pamtiš?","Koji sportski događaj bi voleo da vidiš uživo?"],["Koji tim navijaš?","Koji tim ne podnosiš?"],["U kom sportu si najgori?","U kom sportu si najbolji?"]]);
+X("Zanimanja","električar,vodoinstalater,novinar,pevač,stomatolog,mesar,psiholog,inženjer,taksista,čuvar,kasir,astronaut,režiser,slikar,dizajner",[["Koje zanimanje izgleda najlakše?","Koje zanimanje izgleda najteže?"],["Čime se bavi neko iz tvoje porodice?","Čime bi se ti bavio u penziji?"],["Koje zanimanje je najopasnije?","Koje zanimanje je najkorisnije?"]]);
+X("Predmeti","olovka,stolica,šolja,tanjir,nož,cipele,jakna,kofer,bicikl,laptop,televizor,klima,četka,peškir,lampa",[["Koji predmet ti je najstariji?","Koji predmet ti je najskuplji?"],["Koji predmet uvek gubiš?","Koji predmet uvek nađeš?"],["Koji poklon bi poklonio prijatelju?","Koji poklon bi voleo da dobiješ?"]]);
+N("Zabava","film,serija,koncert,igrica,žurka,karaoke,pozorište,cirkus,festival,crtani film,strip,gitara,klavir,bubnjevi,karte,kviz,disko,horor,komedija,reper,rok,balada,YouTube,TikTok,podcast",[["Koji film možeš gledati više puta?","Koji film te je razočarao?"],["Koja ti je pesma trenutno u glavi?","Koja ti pesma ide na živce?"],["Koju igricu najviše voliš?","Koju igricu si prvu igrao?"],["Koja serija te je navukla?","Koja serija ti je dosadna?"],["Na koji koncert bi otišao?","Na koji koncert si već bio?"]]);
+N("Priroda","kiša,sneg,vulkan,reka,jezero,more,šuma,oluja,duga,grom,magla,vetar,okean,vodopad,dolina,pesak,led,sunce,mesec,zvezde,cvet,drvo,trava,oblak,zemljotres",[["Koje godišnje doba najviše voliš?","Koje godišnje doba najmanje voliš?"],["Kakvo vreme voliš?","Kakvo vreme mrziš?"],["Gde u prirodi bi proveo nedelju dana?","Gde u prirodi si poslednji put bio?"],["Koji prirodni fenomen te fascinira?","Koji prirodni fenomen te plaši?"],["Koji deo dana ti je najlepši?","Koji deo dana ti je najgori?"]]);
+N("Tehnologija","računar,tastatura,miš,internet,WiFi,aplikacija,robot,dron,kamera,pametni sat,konzola,server,baterija,ekran,router,bluetooth,veštačka inteligencija,e-mail,lozinka,video poziv,GPS,printer,USB",[["Koja aplikacija ti je najkorisnija?","Koja aplikacija ti je najzabavnija?"],["Koji gedžet bi kupio?","Koji gedžet ti je suvišan?"],["Koja tehnologija će promeniti svet?","Koja tehnologija te nervira?"],["Šta radiš kad nema interneta?","Šta radiš kad ti se telefon isprazni?"]]);
+N("Dom","kauč,krevet,kuhinja,kupatilo,terasa,komšija,sudopera,veš mašina,usisivač,zavesa,tepih,ormar,sijalica,prozor,lift,podrum,tavan,dvorište,garaža,šporet,mikrotalasna,budilnik,čaršav",[["Koja ti je omiljena prostorija u kući?","Koja ti je najmanje omiljena prostorija?"],["Šta prvo uradiš kad uđeš u stan?","Šta poslednje uradiš pre spavanja?"],["Koji kućni posao mrziš?","Koji kućni posao ti ne smeta?"],["Kakav bi stan voleo?","Kakav stan trenutno imaš?"]]);
+N("Škola i fakultet","ispit,predavanje,profesor,indeks,skripta,kolokvijum,diploma,semestar,praksa,seminarski,tabla,prezentacija,vežbe,ocena,stipendija,studentski dom,menza,ekskurzija,raspust,domaći zadatak,upis,dekan,amfiteatar,učionica",[["Koji predmet si najviše voleo?","Koji predmet si najmanje voleo?"],["Kako se spremaš za ispit?","Kako se opuštaš posle ispita?"],["Koji profesor ti je ostao u sećanju?","Koji profesor ti je bio najstroži?"],["Šta ti je najteže u učenju?","Šta ti je najlakše u učenju?"],["Koja je najbolja stvar u studiranju?","Koja je najgora stvar u studiranju?"]]);
+const $=s=>document.getElementById(s),rnd=n=>Math.floor(Math.random()*n);
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const S={n:5,names:[],mode:'w',t:'fix',fix:1,min:1,max:2,w:{},cats:Object.keys(D),cw:true,qk:false,qc:true,timer:0};
+let R=null,scr='setup',tm=null;
+const mx=()=>Math.max(1,Math.ceil(S.n/2)-1);
+const nm=i=>(S.names[i]||'').trim()||'Igrač '+(i+1);
+const wt=c=>S.w[c]===undefined?1:S.w[c];
+function fixc(){const m=mx();S.fix=Math.min(Math.max(1,S.fix),m);S.min=Math.min(Math.max(1,S.min),m);S.max=Math.min(Math.max(S.min,S.max),m)}
+function chg(k,d){S[k]+=d;S.n=Math.min(10,Math.max(3,S.n));S.timer=Math.max(0,Math.min(600,S.timer));go('setup')}
+function tc(c){const i=S.cats.indexOf(c);i<0?S.cats.push(c):S.cats.splice(i,1)}
+function tog(k){S[k]=!S[k];go('setup')}
+const sp=(l,k,v,st=1)=>`<div class=row><span>${l}</span><span style="display:flex;align-items:center;gap:10px"><button class=s onclick="chg('${k}',${-st})">−</button><b>${v}</b><button class=s onclick="chg('${k}',${st})">+</button></span></div>`;
+const bt=(t,on,a)=>`<button class="${on?'':'o'}" onclick="${a}">${t}</button>`;
+const ck=(t,k)=>`<label><input type=checkbox ${S[k]?'checked':''} onchange="tog('${k}')">${t}</label>`;
+function pick(){const cs=[];for(let c=S.min;c<=S.max;c++)cs.push(c);let ws=cs.map(wt),s=ws.reduce((a,b)=>a+b,0);if(!s){ws=cs.map(()=>1);s=cs.length}let r=Math.random()*s;for(let i=0;i<cs.length;i++){if((r-=ws[i])<0)return cs[i]}return cs[0]}
+const V={
+setup(){fixc();
+let h='<h1 class=c>VARALICA</h1><div class=row>'+bt('Reči',S.mode=='w',"S.mode='w';go('setup')")+bt('Pitanja',S.mode=='q',"S.mode='q';go('setup')")+'</div>';
+h+=sp('Broj igrača','n',S.n)+'<details'+(S.dt?' open':'')+' ontoggle="S.dt=this.open"><summary class=mu>Imena igrača (opciono)</summary>';
+for(let i=0;i<S.n;i++)h+=`<input type=text placeholder="Igrač ${i+1}" value="${(S.names[i]||'').replace(/"/g,'&quot;')}" onchange="S.names[${i}]=this.value">`;
+h+='</details><h2>Broj impostera</h2><div class=row>'+bt('Fiksno',S.t=='fix',"S.t='fix';go('setup')")+bt('Raspon',S.t=='rng',"S.t='rng';go('setup')")+'</div>';
+if(S.t=='fix')h+=sp('Imposteri','fix',S.fix);
+else{h+=sp('Minimum','min',S.min)+sp('Maksimum','max',S.max)+'<p class=mu>Šansa za svaki broj (težina; podrazumevano jednake):</p>';
+let s=0;for(let c=S.min;c<=S.max;c++)s+=wt(c);
+for(let c=S.min;c<=S.max;c++)h+=`<div class=row><span>${c} imp.</span><span><input type=number min=0 step=1 value=${wt(c)} style="width:70px" onchange="S.w[${c}]=Math.max(0,+this.value||0);go('setup')"> <span class=mu>${s?Math.round(100*wt(c)/s):Math.round(100/(S.max-S.min+1))}%</span></span></div>`}
+h+='<h2>Kategorije</h2><div class=chips>'+Object.keys(D).map(c=>`<label><input type=checkbox ${S.cats.includes(c)?'checked':''} onchange="tc('${c}')">${c}</label>`).join('')+'</div><h2>Podešavanja</h2>';
+h+=S.mode=='w'?ck('Imposter vidi kategoriju','cw'):ck('Imposter zna da je imposter','qk')+ck('Prikaži kategoriju svima','qc');
+h+=sp('Tajmer diskusije','timer',S.timer?Math.floor(S.timer/60)+':'+String(S.timer%60).padStart(2,'0'):'isklj.',15);
+return h+'<button style="margin-top:20px" onclick="start()">Počni igru</button>'},
+pass(){return `<div class=big>${nm(R.i)}</div><p class="mu c">Uzmi telefon i pritisni dugme kad si spreman. Ostali ne gledaju!</p><button onclick="go('show')">Prikaži</button>`},
+show(){const imp=R.imps.has(R.i);let b;
+if(S.mode=='w')b=imp?'<div class=big>IMPOSTER</div>'+(S.cw?`<p class=c>Kategorija: ${R.cat}</p>`:''):`<div class=big>${R.word}</div>`;
+else b=(imp&&S.qk?'<p class=c><b>Ti si IMPOSTER</b></p>':'')+(S.qc?`<p class="mu c">Kategorija: ${R.cat}</p>`:'')+`<div class=big style="font-size:28px">${R.q[imp?1:0]}</div>`;
+return `<p class="mu c">${nm(R.i)}</p>${b}<button onclick="R.i++;go(R.i<S.n?'pass':'talk')">${R.i<S.n-1?'Sakrij i dodaj sledećem':'Sakrij i počni diskusiju'}</button>`},
+talk(){return `<h1 class=c>Diskusija</h1><p class=c>Počinje: <b>${nm(R.st)}</b></p><p class="mu c">${S.mode=='w'?'Svako redom kaže jednu reč-asocijaciju (dva kruga), zatim rasprava i glasanje.':'Svako redom glasno odgovara na svoje pitanje, zatim rasprava ko je imao drugačije pitanje.'}</p>${S.timer?'<div class=big id=tm></div>':''}<button onclick="go('end')">Otkrij impostere</button>`},
+end(){const im=[...R.imps].map(nm).join(', ');
+return `<h1 class=c>Rezultat</h1><p class=c>Imposter: <b>${im}</b></p>`+(S.mode=='w'?`<div class=big>${R.word}</div>`:`<p class=c>Pitanje igrača:<br><b>${R.q[0]}</b></p><p class=c>Pitanje impostera:<br><b>${R.q[1]}</b></p>`)+`<button onclick="start()">Nova runda</button><button class=o onclick="go('setup')">Glavni meni</button>`}
+};
+function start(){if(!S.cats.length){alert('Izaberi bar jednu kategoriju');return}
+const c=S.t=='fix'?S.fix:pick(),cat=S.cats[rnd(S.cats.length)];
+R={imps:new Set(shuf([...Array(S.n).keys()]).slice(0,c)),i:0,cat,st:rnd(S.n)};
+if(S.mode=='w')R.word=D[cat].w[rnd(D[cat].w.length)];else R.q=D[cat].q[rnd(D[cat].q.length)];
+go('pass')}
+function go(s){const ch=s!=scr;scr=s;clearInterval(tm);$('hm').style.display=s=='setup'?'none':'block';$('app').innerHTML=V[s]();if(ch)window.scrollTo(0,0);
+if(s=='talk'&&S.timer){let t=S.timer;const f=()=>{const e=$('tm');if(e)e.textContent=t>0?Math.floor(t/60)+':'+String(t%60).padStart(2,'0'):'Vreme!'};f();tm=setInterval(()=>{if(t>0)t--;f()},1000)}}
+go('setup');
+</script></body></html>
