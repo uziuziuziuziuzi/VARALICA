@@ -22,6 +22,7 @@ input[type=text],input[type=number]{background:#000;color:#fff;border:1px solid 
 label{display:flex;align-items:center;gap:10px;margin:10px 0}
 input[type=checkbox]{width:22px;height:22px}
 .chips{display:flex;flex-wrap:wrap;gap:4px 18px}
+.mid{min-height:70vh;min-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;justify-content:center}
 #hm{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;width:44px;height:44px;padding:0;margin:0;display:none;z-index:5;background:#000;color:#fff;border:1px solid #fff;border-radius:10px}
 #hm svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vertical-align:middle}
 </style></head><body><button id="hm" aria-label="Glavni meni" onclick="go('setup')"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h5v-6h3v6h5V10"/></svg></button>
@@ -98,11 +99,11 @@ h+='<h2>Kategorije</h2><div class=chips>'+Object.keys(D).map(c=>`<label><input t
 h+=S.mode=='w'?ck('Imposter vidi kategoriju','cw'):ck('Imposter zna da je imposter','qk')+ck('Prikaži kategoriju svima','qc');
 h+=sp('Tajmer diskusije','timer',S.timer?Math.floor(S.timer/60)+':'+String(S.timer%60).padStart(2,'0'):'isklj.',15);
 return h+'<button style="margin-top:20px" onclick="start()">Počni igru</button>'},
-pass(){return `<div class=big>${nm(R.i)}</div><p class="mu c">Uzmi telefon i pritisni dugme kad si spreman. Ostali ne gledaju!</p><button onclick="go('show')">Prikaži</button>`},
+pass(){return `<div class=mid><div class=big>${nm(R.i)}</div><p class="mu c">Uzmi telefon i pritisni dugme kad si spreman. Ostali ne gledaju!</p><button onclick="go('show')">Prikaži</button></div>`},
 show(){const imp=R.imps.has(R.i);let b;
 if(S.mode=='w')b=imp?'<div class=big>IMPOSTER</div>'+(S.cw?`<p class=c>Kategorija: ${R.cat}</p>`:''):`<div class=big>${R.word}</div>`;
 else b=(imp&&S.qk?'<p class=c><b>Ti si IMPOSTER</b></p>':'')+(S.qc?`<p class="mu c">Kategorija: ${R.cat}</p>`:'')+`<div class=big style="font-size:28px">${R.q[imp?1:0]}</div>`;
-return `<p class="mu c">${nm(R.i)}</p>${b}<button onclick="R.i++;go(R.i<S.n?'pass':'talk')">${R.i<S.n-1?'Sakrij i dodaj sledećem':'Sakrij i počni diskusiju'}</button>`},
+return `<div class=mid><p class="mu c">${nm(R.i)}</p>${b}<button onclick="R.i++;go(R.i<S.n?'pass':'talk')">${R.i<S.n-1?'Sakrij i dodaj sledećem':'Sakrij i počni diskusiju'}</button></div>`},
 talk(){return `<h1 class=c>Diskusija</h1><p class=c>Počinje: <b>${nm(R.st)}</b></p><p class="mu c">${S.mode=='w'?'Svako redom kaže jednu reč-asocijaciju (dva kruga), zatim rasprava i glasanje.':'Svako redom glasno odgovara na svoje pitanje, zatim rasprava ko je imao drugačije pitanje.'}</p>${S.timer?'<div class=big id=tm></div>':''}<button onclick="go('end')">Otkrij impostere</button>`},
 end(){const im=[...R.imps].map(nm).join(', ');
 return `<h1 class=c>Rezultat</h1><p class=c>Imposter: <b>${im}</b></p>`+(S.mode=='w'?`<div class=big>${R.word}</div>`:`<p class=c>Pitanje igrača:<br><b>${R.q[0]}</b></p><p class=c>Pitanje impostera:<br><b>${R.q[1]}</b></p>`)+`<button onclick="start()">Nova runda</button><button class=o onclick="go('setup')">Glavni meni</button>`}
