@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="sr"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Varalica</title>
 <style>
 :root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 body{margin:0;background:#000;color:#fff;font:18px system-ui,sans-serif}
 #app{max-width:480px;margin:auto;padding:16px}
 h1,h2{font-weight:600;margin:18px 0 6px}
@@ -96,5 +97,6 @@ if(S.mode=='w')R.word=D[cat].w[rnd(D[cat].w.length)];else R.q=D[cat].q[rnd(D[cat
 go('pass')}
 function go(s){const ch=s!=scr;scr=s;clearInterval(tm);$('hm').style.display=s=='setup'?'none':'block';$('app').innerHTML=V[s]();if(ch)window.scrollTo(0,0);
 if(s=='talk'&&S.timer){let t=S.timer;const f=()=>{const e=$('tm');if(e)e.textContent=t>0?Math.floor(t/60)+':'+String(t%60).padStart(2,'0'):'Vreme!'};f();tm=setInterval(()=>{if(t>0)t--;f()},1000)}}
+['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,x=>x.preventDefault()));
 go('setup');
 </script></body></html>
